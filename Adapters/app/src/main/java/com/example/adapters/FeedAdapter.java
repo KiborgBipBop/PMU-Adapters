@@ -14,9 +14,9 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.PostViewHolder
         private TextView header;
         private ImageView picture;
         private TextView description;
-        onItemClickListener listener;
+        OnClickListener listener;
 
-        public PostViewHolder(View item, onItemClickListener listener){
+        public PostViewHolder(View item, OnClickListener listener){
             super(item);
             header = item.findViewById(R.id.my_header);
             picture = item.findViewById(R.id.my_pic);
@@ -54,5 +54,12 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.PostViewHolder
     @Override
     public int getItemCount() {
         return 0;
+    }
+
+    public interface OnClickListener
+    {
+        void onClick(View view);
+
+        void onItemClick(int position);
     }
 }

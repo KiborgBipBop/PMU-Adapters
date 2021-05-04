@@ -1,64 +1,151 @@
 package com.example.adapters;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.Toast;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link PostCreator#newInstance} factory method to
- * create an instance of this fragment.
- */
-public class PostCreator extends Fragment {
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+import static android.app.Activity.RESULT_OK;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+public class PostCreator extends Fragment implements View.OnClickListener{
 
-    public PostCreator() {
-        // Required empty public constructor
+    private ImageButton buttonBrowse;
+    private ImageButton buttonClose;
+    private ImageButton buttonConfirm;
+
+    private Uri imageUri = null;
+    private EditText headerText;
+    private EditText descText;
+
+    private boolean checkImage = false;
+
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
+    {
+        container.setClickable(true);
+        View v = inflater.inflate(R.layout.fragment_post_creator, container, false);
+        buttonBrowse = v.findViewById(R.id.post_browse);
+        buttonClose = v.findViewById(R.id.button_close_post);
+        buttonConfirm = v.findViewById(R.id.button_send_post);
+
+        headerText = v.findViewById(R.id.post_header);
+        descText = v.findViewById(R.id.post_desc);
+
+        buttonBrowse.setOnClickListener(this);
+        buttonClose.setOnClickListener(this);
+        buttonConfirm.setOnClickListener(this);
+
+        buttonBrowse.setClipToOutline(true);
+
+        return v;
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment PostCreator.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static PostCreator newInstance(String param1, String param2) {
-        PostCreator fragment = new PostCreator();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+    public void onClick(View view)
+    {
+
+        OnButtonClickListener listener = (OnButtonClickListener) getActivity();
+        switch (view.getId())
+        {
+            case R.id.post_browse:
+                pickImageFromGallery();
+                break;
+            case R.id.button_send_post:
+                boolean isCorrect = true;
+
+                if (headerText.getText().toString().isEmpty())
+                {
+                    Toast.makeText(getActivity(), "Header can not be empty", Toast.LENGTH_LONG).show();
+                    break;
+                }
+                if (imageUri == null)
+                {
+                    Toast.makeText(getActivity(), "Pick an image", Toast.LENGTH_LONG).show();
+                    break;
+                }
+                if (descText.getText().toString().isEmpty())
+                {
+                    Toast.makeText(getActivity(), "Description can not be empty", Toast.LENGTH_LONG).show();
+                    break;
+                }
+
+                getActivity().getSupportFragmentManager().beginTransaction().remove(this).commit();
+                listener.onConfirmButtonClicked(headerText.getText().toString(), imageUri, descText.getText().toString());
+                break;
+            case R.id.button_close_post:
+                getActivity().getSupportFragmentManager().beginTransaction().remove(this).commit();
+                listener = (OnButtonClickListener) getActivity();
+                listener.onCloseButtonClicked();
+                break;
+        }
+
+    }
+
+    private void pickImageFromGallery()
+    {
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType("image/*");
+        startActivityForResult(intent, 0);
+    }
+
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
+    {
+        super.onActivityResult(requestCode, resultCode, data);
+        //Bitmap selectedImage;
+        if (resultCode == RESULT_OK)
+        {
+
+            switch (requestCode)
+            {
+                case 0:
+                    try
+                    {
+                        imageUri = data.getData();
+                        InputStream inputStream = getContext().getContentResolver().openInputStream(imageUri);
+                        Bitmap selectedImage = BitmapFactory.decodeStream(inputStream);
+
+                        buttonBrowse.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                        buttonBrowse.setImageBitmap(selectedImage);
+                        checkImage = true;
+                        //buttonConfirm.setVisibility(View.VISIBLE);
+                    } catch (FileNotFoundException | NullPointerException e)
+                    {
+                        e.printStackTrace();
+                    }
+
+            }
+
         }
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_post_creator, container, false);
+    public interface OnButtonClickListener
+    {
+        void onCloseButtonClicked();
+
+        void onConfirmButtonClicked(String header, Uri imageUri, String desc);
     }
 }
