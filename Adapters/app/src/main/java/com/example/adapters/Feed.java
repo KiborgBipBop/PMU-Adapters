@@ -61,7 +61,7 @@ public class Feed extends Fragment implements FeedAdapter.OnClickListener, View.
 
         posts = new ArrayList<>();
 
-        adapter = new FeedAdapter(posts, this);
+        adapter = new FeedAdapter(posts);
         recycler = getView().findViewById(R.id.recyclerView);
         recycler.setLayoutManager(new LinearLayoutManager(getContext()));
         recycler.setAdapter(adapter);

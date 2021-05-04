@@ -18,9 +18,9 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.PostViewHolder
 
         public PostViewHolder(View item, OnClickListener listener){
             super(item);
-            header = item.findViewById(R.id.my_header);
-            picture = item.findViewById(R.id.my_pic);
-            description = item.findViewById(R.id.my_desc);
+            header = item.findViewById(R.id.post_header);
+            picture = item.findViewById(R.id.my_full_pic);
+            description = item.findViewById(R.id.post_desc);
             this.listener = listener;
 
             item.setOnClickListener(this);

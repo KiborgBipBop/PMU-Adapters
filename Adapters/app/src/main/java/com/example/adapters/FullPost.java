@@ -57,7 +57,7 @@ public class FullPost extends Fragment implements View.OnClickListener {
                 .setOnLinkClickListener((textView, url) ->
                 {
 
-                    Intent intent = new Intent(getActivity(), WebActivity.class);
+                    Intent intent = new Intent(String.valueOf(getActivity()));
                     intent.putExtra("web", Uri.parse(url));
                     startActivity(intent);
                     return true;
